@@ -2,28 +2,14 @@ version: 2
 jobs:
   build:
     docker:
-      - image: gliderlabs/ci:build-2
-        command: ["/bin/bash"]
+      - image: cimg/base:current
     working_directory: /go/src/github.com/gliderlabs/registrator
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          docker_layer_caching: true
       - run:
           command: make circleci
       - run:
           name: Build
           command: make build
-      - store_artifacts:
-          path: build
-      - deploy:
-          name: Deploy website
-          command: |
-            if is-branch "master"; then
-              eval $(docker run gliderlabs/pagebuilder circleci-cmd)
-            fi
-      - deploy:
-          name: Deploy beta channel
-          command: |
-            if is-branch "release"; then
-              make release
-            fi
